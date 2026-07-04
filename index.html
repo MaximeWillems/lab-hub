@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PIKIlab — les projets de PIKI</title>
+  <meta name="description" content="Hub des projets perso de PIKI : classeur de cartes Pokémon, jeu Undercover, tirage de film aléatoire.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧪</text></svg>">
+  <style>
+    :root {
+      --bg: #f6f7f9;
+      --bg-card: #ffffff;
+      --text: #1a1d21;
+      --text-muted: #5c6470;
+      --border: #e2e5ea;
+      --shadow: 0 1px 3px rgba(0, 0, 0, .06), 0 4px 14px rgba(0, 0, 0, .05);
+      --shadow-hover: 0 4px 10px rgba(0, 0, 0, .08), 0 12px 28px rgba(0, 0, 0, .1);
+      --accent: #6366f1;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f1115;
+        --bg-card: #181b21;
+        --text: #e8eaed;
+        --text-muted: #9aa3af;
+        --border: #262a32;
+        --shadow: 0 1px 3px rgba(0, 0, 0, .3), 0 4px 14px rgba(0, 0, 0, .25);
+        --shadow-hover: 0 4px 10px rgba(0, 0, 0, .4), 0 12px 28px rgba(0, 0, 0, .45);
+        --accent: #818cf8;
+      }
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    main {
+      flex: 1;
+      width: 100%;
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 3.5rem 1.25rem 2rem;
+    }
+
+    header { text-align: center; margin-bottom: 3rem; }
+
+    header h1 {
+      font-size: clamp(2.2rem, 6vw, 3rem);
+      font-weight: 800;
+      letter-spacing: -.02em;
+    }
+
+    header h1 .lab { color: var(--accent); }
+
+    header p {
+      margin-top: .6rem;
+      color: var(--text-muted);
+      font-size: 1.05rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1.25rem;
+    }
+
+    /*
+      Pour ajouter un projet : dupliquer un bloc <a class="card"> ci-dessous,
+      changer le lien, l'emoji, le titre et la description. C'est tout.
+    */
+    .card {
+      display: flex;
+      flex-direction: column;
+      gap: .55rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      text-decoration: none;
+      color: inherit;
+      box-shadow: var(--shadow);
+      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    }
+
+    .card:hover, .card:focus-visible {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-hover);
+      border-color: var(--accent);
+      outline: none;
+    }
+
+    .card .emoji {
+      font-size: 2rem;
+      line-height: 1;
+    }
+
+    .card h2 {
+      font-size: 1.15rem;
+      font-weight: 700;
+    }
+
+    .card p {
+      color: var(--text-muted);
+      font-size: .95rem;
+      line-height: 1.5;
+      flex: 1;
+    }
+
+    .card .url {
+      margin-top: .4rem;
+      font-size: .85rem;
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .card .url::after {
+      content: " →";
+      transition: margin-left .18s ease;
+    }
+
+    .card:hover .url::after { margin-left: .25rem; }
+
+    footer {
+      text-align: center;
+      padding: 1.5rem;
+      color: var(--text-muted);
+      font-size: .85rem;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>PIKI<span class="lab">lab</span></h1>
+      <p>Mes petits projets perso, tous au même endroit.</p>
+    </header>
+
+    <div class="grid">
+
+      <a class="card" href="https://cardviewer.pikilab.app">
+        <span class="emoji">🃏</span>
+        <h2>Card Viewer</h2>
+        <p>Classeur virtuel de cartes Pokémon : parcours et organise ta collection.</p>
+        <span class="url">cardviewer.pikilab.app</span>
+      </a>
+
+      <a class="card" href="https://undercover.pikilab.app">
+        <span class="emoji">🕵️</span>
+        <h2>Undercover</h2>
+        <p>Le jeu de bluff entre amis : démasque l'imposteur avant qu'il ne devine le mot.</p>
+        <span class="url">undercover.pikilab.app</span>
+      </a>
+
+      <a class="card" href="https://movie.pikilab.app">
+        <span class="emoji">🎬</span>
+        <h2>Random Movie</h2>
+        <p>Pas d'idée pour ce soir ? Tire un film au hasard et lance la séance.</p>
+        <span class="url">movie.pikilab.app</span>
+      </a>
+
+    </div>
+  </main>
+
+  <footer>
+    pikilab.app — fait maison par PIKI 🧪
+  </footer>
+</body>
+</html>
