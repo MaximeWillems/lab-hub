@@ -36,10 +36,10 @@ async function signup(request, env, url) {
   const confirm = String(form.get("confirm") || "");
   const fail = (code) => redirect(`${url.origin}/signup/?erreur=${code}`);
 
+  if (!env.SESSION_SECRET) return fail("config");
   if (!/^[A-Za-z0-9_-]{3,20}$/.test(username)) return fail("pseudo");
   if (password.length < 8) return fail("court");
   if (password !== confirm) return fail("confirm");
-  if (!env.SESSION_SECRET) return fail("config");
 
   await ensureSchema(env);
 
