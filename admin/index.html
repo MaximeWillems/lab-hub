@@ -17,21 +17,116 @@
     <div class="panel">
       <p class="muted">Connecté en tant que <strong id="who">…</strong></p>
 
-      <p class="soon">Bientôt ici : ajouter, modifier et retirer les cartes du hub.</p>
-
       <div class="actions">
         <a class="btn" href="/">← Retour au hub</a>
         <a class="btn" href="/logout">Se déconnecter</a>
       </div>
     </div>
+
+    <section class="panel">
+      <h2>Cartes du hub</h2>
+      <ul class="card-list" id="cards"></ul>
+    </section>
+
+    <form class="panel" id="add-form">
+      <h2>Ajouter une carte</h2>
+
+      <div class="field-row">
+        <label class="field field-emoji">
+          <span>Emoji</span>
+          <input name="emoji" placeholder="🧪" maxlength="8">
+        </label>
+
+        <label class="field">
+          <span>Titre</span>
+          <input name="title" required maxlength="60" placeholder="Mon projet">
+        </label>
+      </div>
+
+      <label class="field">
+        <span>Description</span>
+        <textarea name="description" rows="2" maxlength="200" placeholder="Une phrase pour présenter le projet."></textarea>
+      </label>
+
+      <label class="field">
+        <span>Lien</span>
+        <input name="url" required placeholder="monprojet.pikilab.app">
+      </label>
+
+      <p class="error" id="form-error" hidden></p>
+      <p class="ok" id="form-ok" hidden>Carte ajoutée au hub ✅</p>
+
+      <div class="actions">
+        <button class="btn btn-primary" type="submit">Ajouter</button>
+      </div>
+    </form>
   </main>
 
   <footer>pikilab.app — fait maison par PIKI 🧪</footer>
 
   <script>
+    const $ = (id) => document.getElementById(id);
+
     fetch("/api/me")
       .then((res) => res.json())
-      .then((me) => { document.getElementById("who").textContent = me.user; });
+      .then((me) => { $("who").textContent = me.user; });
+
+    // Liste des cartes, chacune avec un bouton pour la retirer
+    async function loadCards() {
+      const cards = await (await fetch("/api/cards")).json();
+      const list = $("cards");
+      list.innerHTML = "";
+
+      if (!cards.length) list.innerHTML = '<li class="muted">Aucune carte pour l\'instant.</li>';
+
+      for (const card of cards) {
+        const li = document.createElement("li");
+        const label = document.createElement("span");
+        label.textContent = `${card.emoji} ${card.title}`;
+
+        const remove = document.createElement("button");
+        remove.className = "btn btn-small";
+        remove.textContent = "Retirer";
+        remove.onclick = () => removeCard(card);
+
+        li.append(label, remove);
+        list.append(li);
+      }
+    }
+
+    async function removeCard(card) {
+      if (!confirm(`Retirer « ${card.title} » du hub ?`)) return;
+
+      const res = await fetch(`/api/cards/${card.id}`, { method: "DELETE" });
+      if (!res.ok) alert((await res.json()).error || "Impossible de retirer la carte.");
+
+      loadCards();
+    }
+
+    $("add-form").onsubmit = async (event) => {
+      event.preventDefault();
+      $("form-error").hidden = true;
+      $("form-ok").hidden = true;
+
+      const form = event.target;
+      const res = await fetch("/api/cards", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(Object.fromEntries(new FormData(form)))
+      });
+
+      if (!res.ok) {
+        $("form-error").textContent = (await res.json()).error || "Impossible d'ajouter la carte.";
+        $("form-error").hidden = false;
+        return;
+      }
+
+      form.reset();
+      $("form-ok").hidden = false;
+      loadCards();
+    };
+
+    loadCards();
   </script>
 </body>
 </html>

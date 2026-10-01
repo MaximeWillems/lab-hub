@@ -89,7 +89,43 @@ small.muted { font-weight: 500; font-size: .8rem; }
   color: var(--text);
 }
 
-.field input:focus { outline: none; border-color: var(--accent); }
+.field input:focus, .field textarea:focus { outline: none; border-color: var(--accent); }
+
+.field textarea {
+  font: inherit;
+  font-weight: 500;
+  padding: .7rem .8rem;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  resize: vertical;
+}
+
+.field-row { display: flex; gap: .75rem; }
+.field-row .field { flex: 1; }
+.field-row .field-emoji { flex: 0 0 5.5rem; }
+
+main > * + * { margin-top: 1.25rem; }
+.panel h2 { font-size: 1.1rem; }
+
+.card-list { list-style: none; display: flex; flex-direction: column; gap: .5rem; }
+
+.card-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: .55rem .75rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.btn-small { padding: .35rem .7rem; font-size: .8rem; }
+.btn-small:hover { border-color: var(--bad); color: var(--bad); }
+
+.ok { color: #16a34a; font-weight: 600; font-size: .9rem; }
 
 .actions { display: flex; gap: .75rem; flex-wrap: wrap; }
 

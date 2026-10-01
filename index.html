@@ -73,10 +73,6 @@
       gap: 1.25rem;
     }
 
-    /*
-      Pour ajouter un projet : dupliquer un bloc <a class="card"> ci-dessous,
-      changer le lien, l'emoji, le titre et la description. C'est tout.
-    */
     .card {
       display: flex;
       flex-direction: column;
@@ -147,58 +143,8 @@
       <p>Mes petits projets perso, tous au même endroit.</p>
     </header>
 
-    <div class="grid">
-
-      <a class="card" href="https://cardviewer.pikilab.app" target="_blank" rel="noopener">
-        <span class="emoji">🃏</span>
-        <h2>Card Viewer</h2>
-        <p>Classeur virtuel de cartes Pokémon : parcours et organise ta collection.</p>
-        <span class="url">cardviewer.pikilab.app</span>
-      </a>
-
-      <a class="card" href="https://undercover.pikilab.app" target="_blank" rel="noopener">
-        <span class="emoji">🕵️</span>
-        <h2>Undercover</h2>
-        <p>Le jeu de bluff entre amis : démasque l'imposteur avant qu'il ne devine le mot.</p>
-        <span class="url">undercover.pikilab.app</span>
-      </a>
-
-      <a class="card" href="https://random-movie.pikilab.app" target="_blank" rel="noopener">
-        <span class="emoji">🎬</span>
-        <h2>Random Movie</h2>
-        <p>Pas d'idée pour ce soir ? Tire un film au hasard et lance la séance.</p>
-        <span class="url">random-movie.pikilab.app</span>
-      </a>
-
-      <a class="card" href="https://anime-blindtest.pikilab.app" target="_blank" rel="noopener">
-        <span class="emoji">🎧</span>
-        <h2>Anime Blind Test</h2>
-        <p>Reconnais l'opening d'animé le plus vite possible et marque des points.</p>
-        <span class="url">anime-blindtest.pikilab.app</span>
-      </a>
-
-      <a class="card" href="https://donjon-survivor.pikilab.app" target="_blank" rel="noopener">
-        <span class="emoji">⚔️</span>
-        <h2>Donjon Survivor</h2>
-        <p>Roguelite d'action : descends les étages, améliore ton perso et survis le plus longtemps.</p>
-        <span class="url">donjon-survivor.pikilab.app</span>
-      </a>
-
-      <a class="card" href="https://clicker.pikilab.app" target="_blank" rel="noopener">
-        <span class="emoji">🖱️</span>
-        <h2>Clicker</h2>
-        <p>Jeu incrémental : clique, accumule et débloque des améliorations sans fin.</p>
-        <span class="url">clicker.pikilab.app</span>
-      </a>
-
-      <a class="card" href="https://language.pikilab.app" target="_blank" rel="noopener">
-        <span class="emoji">🗣️</span>
-        <h2>Language Learner</h2>
-        <p>Apprends du vocabulaire et révise à ton rythme, une session à la fois.</p>
-        <span class="url">language.pikilab.app</span>
-      </a>
-
-    </div>
+    <!-- Les cartes viennent de la base (gérées depuis /admin) et sont insérées ici par le Worker -->
+    <div class="grid"><!-- CARTES --></div>
   </main>
 
   <footer>
