@@ -15,26 +15,35 @@
     </header>
 
     <form class="panel" method="POST" action="/login/">
-      <p class="error" id="error" hidden>Mot de passe incorrect.</p>
+      <p class="error" id="error" hidden>Pseudo ou mot de passe incorrect.</p>
+
+      <label class="field">
+        <span>Pseudo</span>
+        <input type="text" name="username" autocomplete="username" required autofocus>
+      </label>
 
       <label class="field">
         <span>Mot de passe</span>
-        <input type="password" name="password" autocomplete="current-password" required autofocus>
+        <input type="password" name="password" autocomplete="current-password" required>
       </label>
+
+      <input type="hidden" name="next" id="next" value="/">
 
       <div class="actions">
         <button class="btn btn-primary" type="submit">Se connecter</button>
         <a class="btn" href="/">← Retour au hub</a>
       </div>
+
+      <p class="muted">Pas encore de compte ? <a href="/signup/">Créer un compte</a></p>
     </form>
   </main>
 
   <footer>pikilab.app — fait maison par PIKI 🧪</footer>
 
   <script>
-    if (new URLSearchParams(location.search).has("erreur")) {
-      document.getElementById("error").hidden = false;
-    }
+    const params = new URLSearchParams(location.search);
+    if (params.has("erreur")) document.getElementById("error").hidden = false;
+    if (params.get("next")) document.getElementById("next").value = params.get("next");
   </script>
 </body>
 </html>

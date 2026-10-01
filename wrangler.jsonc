@@ -7,5 +7,9 @@
     "binding": "ASSETS",
     // Le Worker passe avant les fichiers statiques, pour pouvoir protéger /admin
     "run_worker_first": true
-  }
+  },
+  // Base des comptes (table users créée automatiquement par le Worker)
+  "d1_databases": [
+    { "binding": "DB", "database_name": "pikilab", "database_id": "47a63027-040f-4097-8d51-cede0d1d482b" }
+  ]
 }

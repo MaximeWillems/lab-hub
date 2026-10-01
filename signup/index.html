@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex">
+  <title>Créer un compte — PIKIlab</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧪</text></svg>">
+  <link rel="stylesheet" href="/lab.css">
+</head>
+<body>
+  <main>
+    <header>
+      <h1>PIKI<span class="lab">lab</span> · créer un compte</h1>
+    </header>
+
+    <form class="panel" method="POST" action="/signup/">
+      <p class="error" id="error" hidden></p>
+
+      <label class="field">
+        <span>Pseudo <small class="muted">(3 à 20 caractères : lettres, chiffres, - et _)</small></span>
+        <input type="text" name="username" autocomplete="username" required autofocus
+               minlength="3" maxlength="20" pattern="[A-Za-z0-9_\-]{3,20}">
+      </label>
+
+      <label class="field">
+        <span>Mot de passe <small class="muted">(8 caractères minimum)</small></span>
+        <input type="password" name="password" autocomplete="new-password" required minlength="8">
+      </label>
+
+      <label class="field">
+        <span>Confirmer le mot de passe</span>
+        <input type="password" name="confirm" autocomplete="new-password" required minlength="8">
+      </label>
+
+      <div class="actions">
+        <button class="btn btn-primary" type="submit">Créer mon compte</button>
+        <a class="btn" href="/">← Retour au hub</a>
+      </div>
+
+      <p class="muted">Déjà un compte ? <a href="/login/">Se connecter</a></p>
+    </form>
+  </main>
+
+  <footer>pikilab.app — fait maison par PIKI 🧪</footer>
+
+  <script>
+    const messages = {
+      pseudo: "Pseudo invalide : 3 à 20 caractères, lettres, chiffres, - et _ uniquement.",
+      court: "Le mot de passe doit faire au moins 8 caractères.",
+      confirm: "Les deux mots de passe ne sont pas identiques.",
+      pris: "Ce pseudo est déjà pris.",
+      config: "Les comptes ne sont pas encore activés sur le site."
+    };
+    const code = new URLSearchParams(location.search).get("erreur");
+    if (code) {
+      const error = document.getElementById("error");
+      error.textContent = messages[code] || "Une erreur est survenue.";
+      error.hidden = false;
+    }
+  </script>
+</body>
+</html>

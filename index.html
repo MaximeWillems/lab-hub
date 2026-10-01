@@ -136,8 +136,8 @@
       font-size: .85rem;
     }
 
-    .admin-link { text-decoration: none; opacity: .5; }
-    .admin-link:hover { opacity: 1; }
+    footer a { color: var(--text-muted); font-weight: 600; text-decoration: none; }
+    footer a:hover { color: var(--accent); }
   </style>
 </head>
 <body>
@@ -202,7 +202,22 @@
   </main>
 
   <footer>
-    pikilab.app — fait maison par PIKI 🧪 · <a class="admin-link" href="/admin/" title="Espace admin">🔒</a>
+    pikilab.app — fait maison par PIKI 🧪 · <span id="account"><a href="/login/">Connexion</a></span>
   </footer>
+
+  <script>
+    // Affiche le compte connecté (et le lien admin pour l'admin) à la place de « Connexion »
+    fetch("/api/me")
+      .then((res) => res.json())
+      .then((me) => {
+        if (!me.user) return;
+
+        const account = document.getElementById("account");
+        account.textContent = me.user + " · ";
+        if (me.admin) account.insertAdjacentHTML("beforeend", '<a href="/admin/">🔒 Admin</a> · ');
+        account.insertAdjacentHTML("beforeend", '<a href="/logout">Déconnexion</a>');
+      })
+      .catch(() => {});
+  </script>
 </body>
 </html>

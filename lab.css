@@ -66,6 +66,8 @@ header h1 .lab { color: var(--accent); }
 
 .muted { color: var(--text-muted); }
 .muted strong { color: var(--text); }
+.muted a { color: var(--accent); font-weight: 600; }
+small.muted { font-weight: 500; font-size: .8rem; }
 .error { color: var(--bad); font-weight: 600; font-size: .9rem; }
 
 .soon {
