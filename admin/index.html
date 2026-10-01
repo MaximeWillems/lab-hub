@@ -9,122 +9,325 @@
   <link rel="stylesheet" href="/lab.css">
 </head>
 <body>
-  <main>
+  <main class="wide">
     <header>
       <h1>PIKI<span class="lab">lab</span> · admin</h1>
     </header>
 
-    <div class="panel">
+    <div class="panel topbar">
       <p class="muted">Connecté en tant que <strong id="who">…</strong></p>
-
       <div class="actions">
-        <a class="btn" href="/">← Retour au hub</a>
+        <a class="btn" href="/">← Voir le hub</a>
         <a class="btn" href="/logout">Se déconnecter</a>
       </div>
     </div>
 
-    <section class="panel">
+    <div class="section-head">
       <h2>Cartes du hub</h2>
-      <ul class="card-list" id="cards"></ul>
-    </section>
+      <button class="btn btn-primary" id="btn-new" type="button">+ Nouvelle carte</button>
+    </div>
 
-    <form class="panel" id="add-form">
-      <h2>Ajouter une carte</h2>
-
-      <div class="field-row">
-        <label class="field field-emoji">
-          <span>Emoji</span>
-          <input name="emoji" placeholder="🧪" maxlength="8">
-        </label>
-
-        <label class="field">
-          <span>Titre</span>
-          <input name="title" required maxlength="60" placeholder="Mon projet">
-        </label>
-      </div>
-
-      <label class="field">
-        <span>Description</span>
-        <textarea name="description" rows="2" maxlength="200" placeholder="Une phrase pour présenter le projet."></textarea>
-      </label>
-
-      <label class="field">
-        <span>Lien</span>
-        <input name="url" required placeholder="monprojet.pikilab.app">
-      </label>
-
-      <p class="error" id="form-error" hidden></p>
-      <p class="ok" id="form-ok" hidden>Carte ajoutée au hub ✅</p>
-
-      <div class="actions">
-        <button class="btn btn-primary" type="submit">Ajouter</button>
-      </div>
-    </form>
+    <div class="grid" id="cards"></div>
   </main>
 
   <footer>pikilab.app — fait maison par PIKI 🧪</footer>
 
-  <script>
+  <!-- Fenêtre d'ajout / modification d'une carte -->
+  <dialog id="editor">
+    <form class="editor" id="editor-form" novalidate>
+      <h2 id="editor-title">Nouvelle carte</h2>
+
+      <div class="editor-body">
+        <div class="editor-form">
+          <div class="title-row">
+            <div class="field">
+              <span>Emoji</span>
+              <button class="emoji-btn" id="emoji-btn" type="button" aria-expanded="false" title="Choisir un emoji">🧪</button>
+            </div>
+
+            <label class="field">
+              <span class="field-head">Titre <span class="counter" id="count-title"></span></span>
+              <input name="title" id="f-title" maxlength="60" placeholder="Mon projet" required>
+            </label>
+          </div>
+
+          <div class="emoji-pop" id="emoji-pop" hidden>
+            <emoji-picker locale="fr"
+              data-source="https://cdn.jsdelivr.net/npm/emoji-picker-element-data@1.8.0/fr/emojibase/data.json"></emoji-picker>
+          </div>
+
+          <label class="field">
+            <span class="field-head">Description <span class="counter" id="count-desc"></span></span>
+            <textarea name="description" id="f-desc" maxlength="200" rows="3"
+              placeholder="Une phrase pour présenter le projet."></textarea>
+          </label>
+
+          <label class="field">
+            <span>Lien</span>
+            <input name="url" id="f-url" placeholder="monprojet.pikilab.app" required>
+          </label>
+
+          <p class="error" id="editor-error" hidden></p>
+        </div>
+
+        <div class="preview-side">
+          <span class="label">Aperçu sur le hub</span>
+          <div class="card" id="preview">
+            <span class="emoji"></span>
+            <h2></h2>
+            <p></p>
+            <span class="url"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-danger" id="btn-delete" type="button" hidden>Supprimer</button>
+        <span class="spacer"></span>
+        <button class="btn" id="btn-cancel" type="button">Annuler</button>
+        <button class="btn btn-primary" type="submit">Enregistrer</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast" hidden></div>
+
+  <script type="module">
     const $ = (id) => document.getElementById(id);
+    const dialog = $("editor");
+    const picker = document.querySelector("emoji-picker");
 
-    fetch("/api/me")
-      .then((res) => res.json())
-      .then((me) => { $("who").textContent = me.user; });
+    // Sélecteur d'emoji chargé à part : s'il ne charge pas, le reste de l'admin marche quand même
+    let pickerReady = false;
+    Promise.all([
+      import("https://cdn.jsdelivr.net/npm/emoji-picker-element@1.29.1/index.js"),
+      import("https://cdn.jsdelivr.net/npm/emoji-picker-element@1.29.1/i18n/fr.js")
+    ]).then(([, fr]) => {
+      picker.i18n = fr.default;
+      pickerReady = true;
+    }).catch(() => {});
 
-    // Liste des cartes, chacune avec un bouton pour la retirer
+    let cards = [];
+    let editing = null; // carte en cours de modification, null pour une nouvelle
+    let emoji = "🧪";
+
+    fetch("/api/me").then((res) => res.json()).then((me) => { $("who").textContent = me.user; });
+
+    // ---------- Liste des cartes ----------
+
     async function loadCards() {
-      const cards = await (await fetch("/api/cards")).json();
-      const list = $("cards");
-      list.innerHTML = "";
-
-      if (!cards.length) list.innerHTML = '<li class="muted">Aucune carte pour l\'instant.</li>';
-
-      for (const card of cards) {
-        const li = document.createElement("li");
-        const label = document.createElement("span");
-        label.textContent = `${card.emoji} ${card.title}`;
-
-        const remove = document.createElement("button");
-        remove.className = "btn btn-small";
-        remove.textContent = "Retirer";
-        remove.onclick = () => removeCard(card);
-
-        li.append(label, remove);
-        list.append(li);
-      }
+      cards = await (await fetch("/api/cards")).json();
+      renderCards();
     }
 
-    async function removeCard(card) {
-      if (!confirm(`Retirer « ${card.title} » du hub ?`)) return;
+    function renderCards() {
+      const grid = $("cards");
+      grid.innerHTML = "";
 
-      const res = await fetch(`/api/cards/${card.id}`, { method: "DELETE" });
-      if (!res.ok) alert((await res.json()).error || "Impossible de retirer la carte.");
-
-      loadCards();
-    }
-
-    $("add-form").onsubmit = async (event) => {
-      event.preventDefault();
-      $("form-error").hidden = true;
-      $("form-ok").hidden = true;
-
-      const form = event.target;
-      const res = await fetch("/api/cards", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(Object.fromEntries(new FormData(form)))
-      });
-
-      if (!res.ok) {
-        $("form-error").textContent = (await res.json()).error || "Impossible d'ajouter la carte.";
-        $("form-error").hidden = false;
+      if (!cards.length) {
+        grid.innerHTML = '<p class="empty muted">Aucune carte. Clique sur « + Nouvelle carte » pour commencer.</p>';
         return;
       }
 
-      form.reset();
-      $("form-ok").hidden = false;
+      cards.forEach((card, i) => {
+        const el = buildCard(document.createElement("div"), card);
+        el.classList.add("admin-card");
+        el.title = "Modifier";
+        el.onclick = () => openEditor(card);
+
+        const tools = document.createElement("div");
+        tools.className = "card-tools";
+        tools.append(
+          tool("✏️ Modifier", "edit", () => openEditor(card)),
+          tool("↑", "", () => move(i, -1), i === 0, "Monter"),
+          tool("↓", "", () => move(i, 1), i === cards.length - 1, "Descendre")
+        );
+        el.append(tools);
+        grid.append(el);
+      });
+    }
+
+    function tool(label, className, action, disabled = false, title = "") {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = `btn ${className}`;
+      btn.textContent = label;
+      btn.title = title;
+      btn.disabled = disabled;
+      btn.onclick = (event) => { event.stopPropagation(); action(); };
+
+      return btn;
+    }
+
+    // Remplit une carte avec le même rendu que sur le hub (textContent : aucun HTML interprété)
+    function buildCard(el, card) {
+      el.className = "card";
+      el.innerHTML = '<span class="emoji"></span><h2></h2><p></p><span class="url"></span>';
+      el.querySelector(".emoji").textContent = card.emoji || "🧪";
+      el.querySelector("h2").textContent = card.title || "Titre du projet";
+      el.querySelector("p").textContent = card.description || "";
+      el.querySelector(".url").textContent = shortUrl(card.url) || "monprojet.pikilab.app";
+
+      return el;
+    }
+
+    function shortUrl(link) {
+      if (!link) return "";
+
+      try {
+        const u = new URL(/^https?:\/\//i.test(link) ? link : `https://${link}`);
+        return (u.host + u.pathname).replace(/\/$/, "");
+      } catch {
+        return link;
+      }
+    }
+
+    // Échange la carte avec sa voisine puis enregistre le nouvel ordre
+    async function move(index, delta) {
+      const target = index + delta;
+      [cards[index], cards[target]] = [cards[target], cards[index]];
+      renderCards();
+
+      const res = await api("POST", "/api/cards/order", { ids: cards.map((c) => c.id) });
+      if (!res.ok) toast("Impossible d'enregistrer l'ordre");
+
+      loadCards();
+    }
+
+    // ---------- Fenêtre d'édition ----------
+
+    function openEditor(card) {
+      editing = card || null;
+      $("editor-title").textContent = card ? "Modifier la carte" : "Nouvelle carte";
+      $("btn-delete").hidden = !card;
+      $("editor-error").hidden = true;
+
+      setEmoji(card ? card.emoji : "🧪");
+      $("f-title").value = card ? card.title : "";
+      $("f-desc").value = card ? card.description : "";
+      $("f-url").value = card ? shortUrl(card.url) : "";
+
+      closePicker();
+      updatePreview();
+      dialog.showModal();
+      $("f-title").focus();
+    }
+
+    function setEmoji(value) {
+      emoji = value || "🧪";
+      $("emoji-btn").textContent = emoji;
+      updatePreview();
+    }
+
+    function updatePreview() {
+      buildCard($("preview"), {
+        emoji,
+        title: $("f-title").value.trim(),
+        description: $("f-desc").value.trim(),
+        url: $("f-url").value.trim()
+      });
+      $("count-title").textContent = `${$("f-title").value.length}/60`;
+      $("count-desc").textContent = `${$("f-desc").value.length}/200`;
+    }
+
+    ["f-title", "f-desc", "f-url"].forEach((id) => $(id).addEventListener("input", updatePreview));
+
+    // Sélecteur d'emoji
+    function closePicker() {
+      $("emoji-pop").hidden = true;
+      $("emoji-btn").setAttribute("aria-expanded", "false");
+    }
+
+    $("emoji-btn").onclick = () => {
+      if (!pickerReady) {
+        const typed = prompt("Emoji de la carte :", emoji);
+        if (typed) setEmoji(typed.trim());
+        return;
+      }
+
+      const open = $("emoji-pop").hidden;
+      $("emoji-pop").hidden = !open;
+      $("emoji-btn").setAttribute("aria-expanded", String(open));
+    };
+
+    picker.addEventListener("emoji-click", (event) => {
+      setEmoji(event.detail.unicode);
+      closePicker();
+    });
+
+    // Clic en dehors du sélecteur : on le ferme ; clic sur le fond sombre : on ferme la fenêtre
+    dialog.addEventListener("click", (event) => {
+      if (!$("emoji-pop").hidden && !event.target.closest("#emoji-pop, #emoji-btn")) closePicker();
+      if (event.target === dialog) dialog.close();
+    });
+
+    dialog.addEventListener("cancel", (event) => {
+      if ($("emoji-pop").hidden) return;
+
+      event.preventDefault(); // Échap ferme d'abord le sélecteur, pas toute la fenêtre
+      closePicker();
+    });
+
+    $("btn-cancel").onclick = () => dialog.close();
+
+    $("editor-form").onsubmit = async (event) => {
+      event.preventDefault();
+
+      const body = {
+        emoji,
+        title: $("f-title").value,
+        description: $("f-desc").value,
+        url: $("f-url").value
+      };
+      const res = editing
+        ? await api("PUT", `/api/cards/${editing.id}`, body)
+        : await api("POST", "/api/cards", body);
+
+      if (!res.ok) {
+        $("editor-error").textContent = (await res.json()).error || "Enregistrement impossible.";
+        $("editor-error").hidden = false;
+        return;
+      }
+
+      dialog.close();
+      toast(editing ? "Carte modifiée ✅" : "Carte ajoutée ✅");
       loadCards();
     };
+
+    $("btn-delete").onclick = async () => {
+      if (!confirm(`Supprimer « ${editing.title} » du hub ?`)) return;
+
+      const res = await api("DELETE", `/api/cards/${editing.id}`);
+      if (!res.ok) {
+        $("editor-error").textContent = "Suppression impossible.";
+        $("editor-error").hidden = false;
+        return;
+      }
+
+      dialog.close();
+      toast("Carte supprimée");
+      loadCards();
+    };
+
+    $("btn-new").onclick = () => openEditor(null);
+
+    // ---------- Outils ----------
+
+    function api(method, path, body) {
+      return fetch(path, {
+        method,
+        headers: body ? { "Content-Type": "application/json" } : {},
+        body: body ? JSON.stringify(body) : undefined
+      });
+    }
+
+    let toastTimer;
+    function toast(message) {
+      $("toast").textContent = message;
+      $("toast").hidden = false;
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => { $("toast").hidden = true; }, 2500);
+    }
 
     loadCards();
   </script>

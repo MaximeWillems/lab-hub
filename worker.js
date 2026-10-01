@@ -33,8 +33,10 @@ export default {
 
     if (path === "/api/cards" && request.method === "GET") return json(await listCards(env));
     if (path === "/api/cards" && isPost) return addCard(request, env, url);
+    if (path === "/api/cards/order" && isPost) return reorderCards(request, env, url);
 
     const cardId = path.match(/^\/api\/cards\/(\d+)$/);
+    if (cardId && request.method === "PUT") return updateCard(request, env, url, Number(cardId[1]));
     if (cardId && request.method === "DELETE") return deleteCard(request, env, url, Number(cardId[1]));
 
     if (path.startsWith("/admin")) {
@@ -152,6 +154,39 @@ async function addCard(request, env, url) {
     VALUES (?, ?, ?, ?, (SELECT COALESCE(MAX(position), 0) + 1 FROM cards))`)
     .bind(card.emoji, card.title, card.description, card.url)
     .run();
+
+  return json({ ok: true });
+}
+
+async function updateCard(request, env, url, id) {
+  const denied = await requireAdmin(request, env, url);
+  if (denied) return denied;
+
+  const { card, error } = readCard(await request.json().catch(() => ({})));
+  if (error) return json({ error }, 400);
+
+  await ensureSchema(env);
+  await env.DB.prepare("UPDATE cards SET emoji = ?, title = ?, description = ?, url = ? WHERE id = ?")
+    .bind(card.emoji, card.title, card.description, card.url, id)
+    .run();
+
+  return json({ ok: true });
+}
+
+// Reçoit la liste des id dans le nouvel ordre et renumérote les positions
+async function reorderCards(request, env, url) {
+  const denied = await requireAdmin(request, env, url);
+  if (denied) return denied;
+
+  const { ids } = await request.json().catch(() => ({}));
+  if (!Array.isArray(ids) || !ids.every(Number.isInteger)) return json({ error: "Ordre invalide." }, 400);
+
+  await ensureSchema(env);
+  if (ids.length) {
+    await env.DB.batch(ids.map((id, i) =>
+      env.DB.prepare("UPDATE cards SET position = ? WHERE id = ?").bind(i + 1, id)
+    ));
+  }
 
   return json({ ok: true });
 }
