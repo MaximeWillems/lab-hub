@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex">
+  <title>Connexion — PIKIlab</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔒</text></svg>">
+  <link rel="stylesheet" href="/lab.css">
+</head>
+<body>
+  <main>
+    <header>
+      <h1>PIKI<span class="lab">lab</span> · connexion</h1>
+    </header>
+
+    <form class="panel" method="POST" action="/login/">
+      <p class="error" id="error" hidden>Mot de passe incorrect.</p>
+
+      <label class="field">
+        <span>Mot de passe</span>
+        <input type="password" name="password" autocomplete="current-password" required autofocus>
+      </label>
+
+      <div class="actions">
+        <button class="btn btn-primary" type="submit">Se connecter</button>
+        <a class="btn" href="/">← Retour au hub</a>
+      </div>
+    </form>
+  </main>
+
+  <footer>pikilab.app — fait maison par PIKI 🧪</footer>
+
+  <script>
+    if (new URLSearchParams(location.search).has("erreur")) {
+      document.getElementById("error").hidden = false;
+    }
+  </script>
+</body>
+</html>
